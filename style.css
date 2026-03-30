@@ -210,7 +210,8 @@ body {
 }
 
 .canvasWrap {
-  position: relative;
+  position: sticky;
+  top: 18px;
   width: fit-content;
   max-width: 100%;
   margin: 0 auto;
@@ -222,6 +223,14 @@ body {
   justify-content: center;
   overflow: visible;
   line-height: 0;
+}
+
+/* On mobile/single-column layouts, don't sticky-pin the preview. */
+@media (max-width: 980px) {
+  .canvasWrap {
+    position: relative;
+    top: auto;
+  }
 }
 
 /* Registration marks (print shop corners) */
