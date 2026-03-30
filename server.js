@@ -65,6 +65,6 @@ app.post("/api/suggest", async (req, res) => {
 app.use(express.static(__dirname));
 
 app.listen(PORT, () => {
-  console.log(`Failenn's dither — http://localhost:${PORT}`);
+  console.log(`fither — http://localhost:${PORT}`);
   console.log(`AI proxy: POST /api/suggest (GEMINI_API_KEY in .env)`);
 });

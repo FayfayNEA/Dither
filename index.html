@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Failenn's dither — dither 2.0</title>
+    <title>fither</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,13 +14,15 @@
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
   </head>
   <body>
-    <main class="app print-frame">
+    <main class="app print-frame" id="top">
       <header class="topbar">
-        <div class="title">
-          <div class="h1">Failenn's dither</div>
-          <div class="sub">dither 2.0</div>
+        <div class="topbar-brand">
+          <div class="h1">fither</div>
+          <p class="brand-gallery-link-wrap">
+            <a class="brand-gallery-link" href="#gallery">fither inspo</a>
+          </p>
         </div>
-        <div class="actions">
+        <div class="actions actions--header">
           <label class="file">
             <input id="fileInput" type="file" accept="image/*" />
             <span>Upload image</span>
@@ -70,7 +72,7 @@
         </p>
       </div>
 
-      <section class="content">
+      <section class="content" id="workspace">
         <div class="canvasCol">
           <div class="canvasWrap">
             <span class="reg reg-tl" aria-hidden="true"></span>
@@ -244,10 +246,25 @@
           </div>
         </aside>
       </section>
+
+      <section id="gallery" class="gallery-section" aria-labelledby="gallery-heading">
+        <h2 id="gallery-heading" class="gallery-heading"><span class="panelTitleMark">fither</span> inspo</h2>
+        <p class="gallery-lede">
+          Reference renders from this project, plus anything you download here—those are saved in this browser only
+          (not on the server). Click a thumbnail to open the slideshow.
+        </p>
+        <div id="galleryGrid" class="gallery-grid"></div>
+        <p class="gallery-back">
+          <a href="#top">Back to top</a>
+          ·
+          <a href="#workspace">Down to editor</a>
+        </p>
+      </section>
     </main>
 
     <script src="./presets.js"></script>
     <script src="./sketch.js"></script>
+    <script src="./gallery.js"></script>
   </body>
 </html>
 

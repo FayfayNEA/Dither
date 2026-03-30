@@ -10,7 +10,7 @@ let applyingPreset = false;
 /** When Preset is "custom", keep rendering with the last chosen style (halftone, ordered, etc.). */
 let lastNonCustomRenderStyle = "organic";
 
-// Image-sized canvas + proportional white margin (matches Processing: Failenn's dither)
+// Image-sized canvas + proportional white margin (matches Processing: fither)
 let contentW = 900;
 let contentH = 900;
 let margin = 0;
@@ -105,7 +105,7 @@ function draw() {
   const remix =
     cfg.presetKey !== "custom" && presetIsRemixedFromDOM(cfg.presetKey);
   setStatus(
-    `Failenn's dither — ${cfg.presetLabel || "custom"} (${cfg.renderStyle})${
+    `fither — ${cfg.presetLabel || "custom"} (${cfg.renderStyle})${
       remix ? " · remixed" : ""
     } · ${contentW}×${contentH} + margin ${margin}px`
   );
@@ -893,7 +893,7 @@ const LS_GEMINI_KEY = "geminiApiKey";
 const LS_AI_BEHAVIOR = "geminiAiBehavior";
 
 /** Shown when “How the AI should act” is empty; edit the textarea to replace permanently. */
-const DEFAULT_AI_BEHAVIOR = `You are Failenn's dither copilot: opinionated about print, zines, and halftone. You only output JSON for this app—no markdown, no small talk.
+const DEFAULT_AI_BEHAVIOR = `You are fither's copilot: opinionated about print, zines, and halftone. You only output JSON for this app—no markdown, no small talk.
 
 Bias: match the user's creative goal (e.g. newsprint → error diffusion or ordered; soft illustration → halftone/stipple; bold graphic → threshold or high-contrast diffusion). Prefer fewer slider overrides when a preset alone fits; use overrides to nudge contrast, grid density, or gamma. If unsure, choose a safe, popular preset (e.g. organic natural or Atkinson) with light overrides.`;
 
@@ -1141,8 +1141,28 @@ function wireUI() {
   document.getElementById("downloadBtn").addEventListener("click", () => {
     if (!hasRendered) return setStatus("Render first, then download.");
     const key = document.getElementById("presetSelect").value;
-    const name = key === "custom" ? "failenn_dither" : key;
-    saveCanvas(name, "png");
+    const name = key === "custom" ? "fither_export" : key;
+    const canvas = document.querySelector("#canvasMount canvas");
+    if (!canvas) return setStatus("No canvas to export.");
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return setStatus("Could not export PNG.");
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${name}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        const label = `${name.replace(/_/g, " ")} · ${new Date().toLocaleString()}`;
+        if (typeof window.fitherGalleryAddExport === "function") {
+          window.fitherGalleryAddExport(blob, label);
+        }
+        setStatus(`Saved ${name}.png — also added to fither inspo (this browser).`);
+      },
+      "image/png"
+    );
   });
 
   const ids = [
