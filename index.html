@@ -29,48 +29,8 @@
           </label>
           <button id="renderBtn" type="button">Render</button>
           <button id="downloadBtn" type="button">Download PNG</button>
-          <button id="aiModeBtn" type="button" class="ai-mode-btn" aria-expanded="false" aria-controls="aiPanel">
-            AI mode
-          </button>
         </div>
       </header>
-
-      <div id="aiPanel" class="ai-panel" hidden>
-        <div class="ai-panel-inner">
-          <label class="ai-field ai-field-block">
-            <span>How the AI should act</span>
-            <textarea
-              id="aiBehavior"
-              rows="3"
-              spellcheck="true"
-              placeholder="Persona and rules: tone, style bias, when to use error diffusion vs halftone, how aggressive overrides should be…"
-            ></textarea>
-          </label>
-          <label class="ai-field">
-            <span>Your API key (optional)</span>
-            <input
-              id="geminiApiKey"
-              type="password"
-              autocomplete="off"
-              placeholder="Leave empty if the server has a key (npm start + .env)"
-            />
-          </label>
-          <label class="ai-field ai-field-grow">
-            <span>What do you want?</span>
-            <input
-              id="aiPrompt"
-              type="text"
-              placeholder="e.g. gritty newspaper, soft zine halftone, high-contrast 1-bit"
-            />
-          </label>
-          <button id="aiSuggestBtn" type="button" class="ai-suggest-btn">Suggest</button>
-        </div>
-        <p class="ai-hint">
-          With <code>npm start</code>, the app serves a small backend: put <code>GEMINI_API_KEY</code> in
-          <code>.env</code> (see <code>.env.example</code>) so visitors do not need a key. Optionally paste your own
-          key here to call Gemini from the browser instead. “How the AI should act” is saved in local storage.
-        </p>
-      </div>
 
       <section class="content" id="workspace">
         <div class="canvasCol">

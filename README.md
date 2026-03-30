@@ -22,30 +22,18 @@ How to run locally (quick):
 Notes:
 - Browsers may block some features when opening a file directly. If that happens, use a tiny local server.
 
-### Run with AI suggest (recommended)
+### Local server (optional)
 
-Uses a small **Express** backend so your **Google AI key stays on the server** (`.env`, never committed).
-
-1. Install [Node.js](https://nodejs.org/).
-2. Copy `.env.example` to `.env` and set `GEMINI_API_KEY` from [Google AI Studio](https://aistudio.google.com/apikey).
-3. In this folder:
+Install [Node.js](https://nodejs.org/), then:
 
 ```bash
 npm install
 npm start
 ```
 
-4. Open `http://localhost:3000` (or the port in `.env`). **Suggest** calls `POST /api/suggest` — no key in the browser.
+Open `http://localhost:3000` (or set `PORT` in `.env`). Same as static hosting, but avoids browser quirks when opening files directly.
 
-Optional: leave the key field empty on the server; or paste **your own** key in the UI to call Gemini from the client (BYOK).
-
-### Static-only (no AI proxy)
-
-```bash
-npx serve
-```
-
-Then open the printed local URL. For **Suggest**, paste a Gemini API key in AI mode, or use `npm start` above.
+Or use any static server, e.g. `npx serve`.
 
 Deploy/share it:
 - **GitHub Pages**: put these files in a repo, then enable Pages for the `main` branch.
@@ -55,7 +43,7 @@ Deploy/share it:
 ## Run it (Processing)
 
 - Install Processing (Java mode).
-- Open `testing_file.pde`.
+- Open `assets/testing_file.pde`.
 - Put an image at `data/input.jpg` (or change `inputImagePath` in the code).
 - Click **Run**.
 
