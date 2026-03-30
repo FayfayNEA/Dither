@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Failenn's dither — dither 2.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  </head>
+  <body>
+    <main class="app print-frame">
+      <header class="topbar">
+        <div class="title">
+          <div class="h1">Failenn's dither</div>
+          <div class="sub">dither 2.0</div>
+        </div>
+        <div class="actions">
+          <label class="file">
+            <input id="fileInput" type="file" accept="image/*" />
+            <span>Upload image</span>
+          </label>
+          <button id="renderBtn" type="button">Render</button>
+          <button id="downloadBtn" type="button">Download PNG</button>
+          <button id="aiModeBtn" type="button" class="ai-mode-btn" aria-expanded="false" aria-controls="aiPanel">
+            AI mode
+          </button>
+        </div>
+      </header>
+
+      <div id="aiPanel" class="ai-panel" hidden>
+        <div class="ai-panel-inner">
+          <label class="ai-field ai-field-block">
+            <span>How the AI should act</span>
+            <textarea
+              id="aiBehavior"
+              rows="3"
+              spellcheck="true"
+              placeholder="Persona and rules: tone, style bias, when to use error diffusion vs halftone, how aggressive overrides should be…"
+            ></textarea>
+          </label>
+          <label class="ai-field">
+            <span>Your API key (optional)</span>
+            <input
+              id="geminiApiKey"
+              type="password"
+              autocomplete="off"
+              placeholder="Leave empty if the server has a key (npm start + .env)"
+            />
+          </label>
+          <label class="ai-field ai-field-grow">
+            <span>What do you want?</span>
+            <input
+              id="aiPrompt"
+              type="text"
+              placeholder="e.g. gritty newspaper, soft zine halftone, high-contrast 1-bit"
+            />
+          </label>
+          <button id="aiSuggestBtn" type="button" class="ai-suggest-btn">Suggest</button>
+        </div>
+        <p class="ai-hint">
+          With <code>npm start</code>, the app serves a small backend: put <code>GEMINI_API_KEY</code> in
+          <code>.env</code> (see <code>.env.example</code>) so visitors do not need a key. Optionally paste your own
+          key here to call Gemini from the browser instead. “How the AI should act” is saved in local storage.
+        </p>
+      </div>
+
+      <section class="content">
+        <div class="canvasCol">
+          <div class="canvasWrap">
+            <span class="reg reg-tl" aria-hidden="true"></span>
+            <span class="reg reg-tr" aria-hidden="true"></span>
+            <span class="reg reg-bl" aria-hidden="true"></span>
+            <span class="reg reg-br" aria-hidden="true"></span>
+            <div id="canvasMount"></div>
+            <div id="status" class="status">No image loaded. Upload one to begin.</div>
+          </div>
+        </div>
+
+        <aside class="panel">
+          <div class="panelTitle"><span class="panelTitleMark">Ink</span> Controls</div>
+
+          <div class="row">
+            <label>Preset</label>
+            <select id="presetSelect"></select>
+          </div>
+
+          <div class="row" id="thresholdRow">
+            <label>Threshold (1-bit)</label>
+            <div class="control">
+              <input id="threshold" type="range" min="0.05" max="0.95" step="0.01" value="0.5" />
+              <input id="thresholdNum" class="num" type="number" min="0.05" max="0.95" step="0.01" value="0.5" />
+            </div>
+          </div>
+
+          <div class="row" id="row-gridCount">
+            <label>Grid count</label>
+            <div class="control">
+              <input id="gridCount" type="range" min="10" max="140" step="1" value="50" />
+              <input id="gridCountNum" class="num" type="number" min="10" max="140" step="1" value="50" />
+            </div>
+          </div>
+
+          <div class="row" id="row-minRadius">
+            <label>Min radius</label>
+            <div class="control">
+              <input id="minRadius" type="range" min="0.5" max="10" step="0.1" value="2" />
+              <input id="minRadiusNum" class="num" type="number" min="0.5" max="10" step="0.1" value="2" />
+            </div>
+          </div>
+
+          <div class="row" id="row-maxRadius">
+            <label>Max radius</label>
+            <div class="control">
+              <input id="maxRadius" type="range" min="2" max="30" step="0.1" value="15" />
+              <input id="maxRadiusNum" class="num" type="number" min="2" max="30" step="0.1" value="15" />
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="row" id="row-bridgeScale">
+            <label>Bridge scale</label>
+            <div class="control">
+              <input id="bridgeScale" type="range" min="0.2" max="5" step="0.01" value="3.7699" />
+              <input id="bridgeScaleNum" class="num" type="number" min="0.2" max="5" step="0.01" value="3.7699" />
+            </div>
+          </div>
+
+          <div class="row" id="row-bridgeWaist">
+            <label>Bridge waist</label>
+            <div class="control">
+              <input id="bridgeWaist" type="range" min="0.02" max="1" step="0.01" value="0.1" />
+              <input id="bridgeWaistNum" class="num" type="number" min="0.02" max="1" step="0.01" value="0.1" />
+            </div>
+          </div>
+
+          <div class="row" id="row-maxConnectDist">
+            <label>Max connect dist (cells)</label>
+            <div class="control">
+              <input id="maxConnectDist" type="range" min="0.6" max="100" step="0.01" value="1.2" />
+              <input id="maxConnectDistNum" class="num" type="number" min="0.6" max="6" step="0.01" value="1.2" />
+            </div>
+          </div>
+
+          <div class="row" id="row-toneDiffLimit">
+            <label>Tone diff limit</label>
+            <div class="control">
+              <input id="toneDiffLimit" type="range" min="0" max="0.6" step="0.01" value="0.15" />
+              <input id="toneDiffLimitNum" class="num" type="number" min="0" max="0.6" step="0.01" value="0.15" />
+            </div>
+          </div>
+
+          <div class="row" id="row-gradientThreshold">
+            <label>Gradient threshold</label>
+            <div class="control">
+              <input id="gradientThreshold" type="range" min="0" max="0.4" step="0.005" value="0.12" />
+              <input id="gradientThresholdNum" class="num" type="number" min="0" max="0.4" step="0.005" value="0.12" />
+            </div>
+          </div>
+
+          <div class="row" id="row-edgeTaper">
+            <label>Edge taper</label>
+            <div class="control">
+              <input id="edgeTaper" type="range" min="0" max="1" step="0.01" value="0.3" />
+              <input id="edgeTaperNum" class="num" type="number" min="0" max="1" step="0.01" value="0.3" />
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="row" id="row-maxBright">
+            <label>Max brightness for links (dark-only)</label>
+            <div class="control">
+              <input id="maxBright" type="range" min="0.2" max="0.65" step="0.01" value="0.5" />
+              <input id="maxBrightNum" class="num" type="number" min="0.2" max="0.65" step="0.01" value="0.5" />
+            </div>
+          </div>
+
+          <div class="row" id="row-maxLinksPerDot">
+            <label>Max links per dot</label>
+            <div class="control">
+              <input id="maxLinksPerDot" type="range" min="0" max="8" step="1" value="4" />
+              <input id="maxLinksPerDotNum" class="num" type="number" min="0" max="8" step="1" value="4" />
+            </div>
+          </div>
+
+          <div class="row" id="row-contrast">
+            <label>Contrast (before sampling)</label>
+            <div class="control">
+              <input id="contrast" type="range" min="0.5" max="2" step="0.01" value="1" />
+              <input id="contrastNum" class="num" type="number" min="0.5" max="2" step="0.01" value="1" />
+            </div>
+          </div>
+
+          <div class="row" id="row-quantizeLevels">
+            <label>Quantize levels (0 = off, 5 = five-zone)</label>
+            <div class="control">
+              <input id="quantizeLevels" type="range" min="0" max="8" step="1" value="0" />
+              <input id="quantizeLevelsNum" class="num" type="number" min="0" max="8" step="1" value="0" />
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="row" id="row-stippleJitter">
+            <label>Stipple jitter</label>
+            <div class="control">
+              <input id="stippleJitter" type="range" min="0" max="1.2" step="0.01" value="0.42" />
+              <input id="stippleJitterNum" class="num" type="number" min="0" max="1.2" step="0.01" value="0.42" />
+            </div>
+          </div>
+
+          <div class="row" id="row-halftoneGamma">
+            <label>Halftone gamma</label>
+            <div class="control">
+              <input id="halftoneGamma" type="range" min="0.5" max="1.2" step="0.01" value="0.88" />
+              <input id="halftoneGammaNum" class="num" type="number" min="0.5" max="1.2" step="0.01" value="0.88" />
+            </div>
+          </div>
+
+          <div class="row" id="row-edgeMag">
+            <label>Edge line strength</label>
+            <div class="control">
+              <input id="edgeMag" type="range" min="0.05" max="0.35" step="0.005" value="0.14" />
+              <input id="edgeMagNum" class="num" type="number" min="0.05" max="0.35" step="0.005" value="0.14" />
+            </div>
+          </div>
+
+          <div class="hint">
+            Every control stays editable for every preset so you can build your own mixes: tune grid, bridges,
+            contrast, gamma, etc., then switch algorithms — values are kept in the panel (only the
+            <strong>Threshold</strong> row hides when it does not apply). The preview always uses the controls that
+            matter for the <strong>current</strong> algorithm. Error diffusion uses every slider: <strong>Grid</strong>
+            (1–140, 140 = full width), radii (blur), bridges/tone/gradient (edge + error shaping), stipple jitter /
+            edge strength (noise &amp; edge weight), plus contrast / quantize / gamma / taper. <strong>Remixed</strong>
+            in the status line means your numbers differ from the preset
+            file in <code>presets.js</code>.
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="./presets.js"></script>
+    <script src="./sketch.js"></script>
+  </body>
+</html>
+

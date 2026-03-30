@@ -1,0 +1,6 @@
+# API keys and local env (never commit)
+.env
+node_modules/
+.env.local
+*.local.js
+config.local.js
