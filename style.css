@@ -1,16 +1,16 @@
-/* Screenprint / halftone — black ink on light green paper */
+/* Screenprint / halftone — black ink on green paper */
 
 :root {
-  /* Soft mint / sage paper — ink UI unchanged */
-  --paper: #e0ebe3;
-  --paper-bright: #f0f6f2;
+  /* Light paper tint based on #5F7738 */
+  --paper: #e7eddc;
+  --paper-bright: #f5f8ef;
   --ink: #0a0a0a;
   --ink-soft: #2a2a2a;
-  --muted: #3e4540;
+  --muted: #3f4b32;
   --line: #0a0a0a;
   --accent: #0a0a0a;
-  --halftone-dot: rgba(30, 65, 45, 0.085);
-  --paper-deep: #c9d8ce;
+  --halftone-dot: rgba(95, 119, 56, 0.09);
+  --paper-deep: #d2dcc3;
 }
 
 *,

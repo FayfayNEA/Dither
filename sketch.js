@@ -467,6 +467,15 @@ function drawErrorDiffusion(cfg) {
   const nh = Math.max(4, Math.min(ch, Math.round((nw * ch) / cw)));
 
   const buf = new Float32Array(nw * nh);
+  // Keep classic diffusion kernels faithful (FS/Atkinson/Jarvis/Stucki/Burkes/Sierra2).
+  // These algorithms shouldn't be affected by the organic bridge/edge controls.
+  const isClassic =
+    cfg.renderStyle === "fs" ||
+    cfg.renderStyle === "atkinson" ||
+    cfg.renderStyle === "jarvis" ||
+    cfg.renderStyle === "stucki" ||
+    cfg.renderStyle === "burkes" ||
+    cfg.renderStyle === "sierra2";
   const nOff = cfg.stippleJitter * 17.1 + cfg.maxConnectDist * 9.3;
 
   for (let y = 0; y < nh; y++) {
@@ -474,17 +483,17 @@ function drawErrorDiffusion(cfg) {
       const px = clampInt(Math.floor(((x + 0.5) / nw) * cw), 0, cw - 1);
       const py = clampInt(Math.floor(((y + 0.5) / nh) * ch), 0, ch - 1);
       let b = brightness01At(px, py);
-      b = Math.min(b, cfg.maxBright);
       b = applyLumaGamma01(b, cfg.halftoneGamma);
       b = applyContrast01(b, cfg.contrast);
-      const jN =
-        (noise(x * 0.37 + nOff, y * 0.41) - 0.5) * cfg.stippleJitter * 0.16 +
-        (hash01(x * 0.17 + cfg.bridgeScale, y * 0.19) - 0.5) * cfg.maxConnectDist * 0.055;
+      const jN = isClassic
+        ? 0
+        : (noise(x * 0.37 + nOff, y * 0.41) - 0.5) * cfg.stippleJitter * 0.16 +
+          (hash01(x * 0.17 + cfg.bridgeScale, y * 0.19) - 0.5) * cfg.maxConnectDist * 0.055;
       buf[y * nw + x] = clamp(b + jN, 0, 1);
     }
   }
 
-  const blurAmt = clamp((cfg.minRadius + cfg.maxRadius) / 36, 0, 0.38);
+  const blurAmt = isClassic ? 0 : clamp((cfg.minRadius + cfg.maxRadius) / 36, 0, 0.38);
   maybeBoxBlurFloat01(buf, nw, nh, blurAmt);
 
   const outBin = new Uint8Array(nw * nh);
@@ -497,20 +506,22 @@ function drawErrorDiffusion(cfg) {
       const newV = quantize01(oldV, levels);
       let err = oldV - newV;
 
-      const px = clampInt(Math.floor(((x + 0.5) / nw) * cw), 0, cw - 1);
-      const py = clampInt(Math.floor(((y + 0.5) / nh) * ch), 0, ch - 1);
-      const g = localGradient01(px, py);
+      if (!isClassic) {
+        const px = clampInt(Math.floor(((x + 0.5) / nw) * cw), 0, cw - 1);
+        const py = clampInt(Math.floor(((y + 0.5) / nh) * ch), 0, ch - 1);
+        const g = localGradient01(px, py);
 
-      let damp = 1 - clamp(cfg.edgeTaper * g * 2.8, 0, 0.92);
-      damp *= 1 - clamp(cfg.edgeMag * g * 2.2, 0, 0.48);
-      if (cfg.gradientThreshold > 0.001) {
-        damp *= clamp(1 - (g / cfg.gradientThreshold) * 0.28, 0.5, 1);
+        let damp = 1 - clamp(cfg.edgeTaper * g * 2.8, 0, 0.92);
+        damp *= 1 - clamp(cfg.edgeMag * g * 2.2, 0, 0.48);
+        if (cfg.gradientThreshold > 0.001) {
+          damp *= clamp(1 - (g / cfg.gradientThreshold) * 0.28, 0.5, 1);
+        }
+        damp *= 1 - clamp(cfg.toneDiffLimit * g * 1.6, 0, 0.35);
+
+        const bridgeGain = clamp(cfg.bridgeScale * 0.24, 0.38, 2.1) * lerp(0.86, 1.12, cfg.bridgeWaist);
+        err *= damp * bridgeGain * (1 + cfg.maxLinksPerDot * 0.022);
+        err *= clamp(1 + (hash01(x, y + cfg.maxConnectDist) - 0.5) * cfg.toneDiffLimit * 0.9, 0.65, 1.35);
       }
-      damp *= 1 - clamp(cfg.toneDiffLimit * g * 1.6, 0, 0.35);
-
-      const bridgeGain = clamp(cfg.bridgeScale * 0.24, 0.38, 2.1) * lerp(0.86, 1.12, cfg.bridgeWaist);
-      err *= damp * bridgeGain * (1 + cfg.maxLinksPerDot * 0.022);
-      err *= clamp(1 + (hash01(x, y + cfg.maxConnectDist) - 0.5) * cfg.toneDiffLimit * 0.9, 0.65, 1.35);
 
       outBin[i] = newV < 0.5 ? 0 : 255;
 
@@ -845,6 +856,26 @@ function applyPresetToUI(key, silent) {
   if (!def || key === "custom") return;
   applyingPreset = true;
   try {
+    // Reset everything to baseline defaults first, so switching between very different
+    // algorithms doesn't leave unrelated sliders “stuck” from the previous preset.
+    setVal("threshold", 0.5);
+    setVal("gridCount", 50);
+    setVal("minRadius", 2);
+    setVal("maxRadius", 15);
+    setVal("bridgeScale", 3.7699);
+    setVal("bridgeWaist", 0.1);
+    setVal("maxConnectDist", 1.2);
+    setVal("toneDiffLimit", 0.15);
+    setVal("gradientThreshold", 0.12);
+    setVal("edgeTaper", 0.3);
+    setVal("maxBright", 0.5);
+    setVal("maxLinksPerDot", 4);
+    setVal("contrast", 1);
+    setVal("quantizeLevels", 0);
+    setVal("stippleJitter", 0.42);
+    setVal("halftoneGamma", 0.88);
+    setVal("edgeMag", 0.14);
+
     if (def.threshold != null) setVal("threshold", def.threshold);
 
     if (def.gridCount != null) setVal("gridCount", def.gridCount);
@@ -861,9 +892,9 @@ function applyPresetToUI(key, silent) {
     if (def.contrast != null) setVal("contrast", def.contrast);
     if (def.quantizeLevels != null) setVal("quantizeLevels", def.quantizeLevels);
 
-    setVal("stippleJitter", def.stippleJitter != null ? def.stippleJitter : 0.42);
-    setVal("halftoneGamma", def.halftoneGamma != null ? def.halftoneGamma : 0.88);
-    setVal("edgeMag", def.edgeMag != null ? def.edgeMag : 0.14);
+    if (def.stippleJitter != null) setVal("stippleJitter", def.stippleJitter);
+    if (def.halftoneGamma != null) setVal("halftoneGamma", def.halftoneGamma);
+    if (def.edgeMag != null) setVal("edgeMag", def.edgeMag);
 
     document.getElementById("presetSelect").value = key;
     updateLastNonCustomRenderStyle();
@@ -977,12 +1008,22 @@ function wireUI() {
     const el = document.getElementById(id);
     if (!el) continue;
     el.addEventListener("input", () => {
-      syncUIOutputs();
-      if (srcImg) {
-        hasRendered = false;
-        setStatus("Rendering...");
-        scheduleRender();
+      if (!srcImg) return;
+      if (applyingPreset) return;
+
+      // If you're on a named preset and tweak any slider, flip to Custom.
+      // Re-selecting the preset later snaps everything back to the true preset defaults.
+      const sel = document.getElementById("presetSelect");
+      const currentKey = sel?.value || "custom";
+      if (currentKey !== "custom" && DITHER_PRESETS[currentKey]) {
+        lastNonCustomRenderStyle = DITHER_PRESETS[currentKey].renderStyle || lastNonCustomRenderStyle;
+        if (sel) sel.value = "custom";
       }
+
+      syncUIOutputs();
+      hasRendered = false;
+      setStatus("Rendering...");
+      scheduleRender();
     });
   }
 }
