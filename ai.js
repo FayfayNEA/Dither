@@ -69,7 +69,7 @@
         body.imageMediaType = mediaType;
       }
 
-      const res = await fetch("/api/suggest", {
+      const res = await fetch("https://dither-production.up.railway.app/api/suggest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
