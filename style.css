@@ -865,3 +865,179 @@ body.gallery-lightbox-open {
     width: 100%;
   }
 }
+
+/* ── AI Ask section ───────────────────────────────────────────────────────── */
+
+.ai-section {
+  padding: 10px 0 14px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 4px;
+}
+
+.ai-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.ai-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+#aiPrompt {
+  flex: 1 1 auto;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  background: var(--paper-bright);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  padding: 6px 8px;
+  resize: vertical;
+  min-height: 50px;
+  outline: none;
+  transition: border-color 0.1s;
+}
+
+#aiPrompt:focus {
+  border-color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+#aiPrompt::placeholder {
+  color: var(--muted);
+  opacity: 0.65;
+}
+
+#aiBtn {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 6px 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  align-self: stretch;
+  transition: opacity 0.1s;
+}
+
+#aiBtn:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+#aiBtn:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+.ai-response {
+  margin-top: 9px;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  padding: 7px 10px;
+  background: var(--paper-deep);
+  border-left: 3px solid var(--ink);
+  color: var(--ink-soft);
+}
+
+.ai-response--error {
+  border-left-color: #7a1010;
+  color: #7a1010;
+}
+
+/* ── Save preset row ──────────────────────────────────────────────────────── */
+
+.preset-save-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.preset-save-row select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#savePresetBtn {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.9rem;
+  background: var(--paper-deep);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 0 10px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background 0.1s, color 0.1s;
+}
+
+#savePresetBtn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.save-name-wrap {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.save-name-wrap[hidden] {
+  display: none;
+}
+
+.save-name-input {
+  flex: 1 1 auto;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  padding: 6px 8px;
+  border: 2px solid var(--ink);
+  background: var(--paper-bright);
+  color: var(--ink);
+  outline: none;
+  min-width: 0;
+}
+
+.save-name-input:focus {
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.save-name-wrap button {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#saveNameConfirm {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+#saveNameConfirm:hover {
+  opacity: 0.8;
+}
+
+#saveNameCancel {
+  background: transparent;
+  color: var(--ink);
+}
+
+#saveNameCancel:hover {
+  background: var(--paper-deep);
+}
