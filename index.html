@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./style.css?v=3" />
+    <link rel="stylesheet" href="./style.css?v=4" />
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
   </head>
   <body>
@@ -48,9 +48,26 @@
         <aside class="panel">
           <div class="panelTitle"><span class="panelTitleMark">Ink</span> Controls</div>
 
+          <div class="ai-section">
+            <div class="ai-label">Give a vibe and your proper dither will populate</div>
+            <div class="ai-input-row">
+              <textarea id="aiPrompt" placeholder="e.g. &quot;newspaper print&quot;, &quot;dreamy organic&quot;, &quot;high contrast stamp&quot;" rows="2"></textarea>
+              <button id="aiBtn" type="button">Go</button>
+            </div>
+            <div id="aiResponse" class="ai-response" hidden></div>
+          </div>
+
           <div class="row">
             <label>Preset</label>
-            <select id="presetSelect"></select>
+            <div class="preset-save-row">
+              <select id="presetSelect"></select>
+              <button id="savePresetBtn" type="button" title="Save current settings as a named preset">&#9733;</button>
+            </div>
+            <div id="saveNameWrap" class="save-name-wrap" hidden>
+              <input id="saveNameInput" class="save-name-input" type="text" placeholder="Preset name&hellip;" maxlength="40" />
+              <button id="saveNameConfirm" type="button">Save</button>
+              <button id="saveNameCancel" type="button">&#10005;</button>
+            </div>
           </div>
 
           <div class="row" id="thresholdRow">
@@ -90,16 +107,16 @@
           <div class="row" id="row-bridgeScale">
             <label>Bridge scale</label>
             <div class="control">
-              <input id="bridgeScale" type="range" min="0.2" max="5" step="0.01" value="3.7699" />
-              <input id="bridgeScaleNum" class="num" type="number" min="0.2" max="5" step="0.01" value="3.7699" />
+              <input id="bridgeScale" type="range" min="0.2" max="20" step="0.01" value="3.7699" />
+              <input id="bridgeScaleNum" class="num" type="number" min="0.2" max="20" step="0.01" value="3.7699" />
             </div>
           </div>
 
           <div class="row" id="row-bridgeWaist">
             <label>Bridge waist</label>
             <div class="control">
-              <input id="bridgeWaist" type="range" min="0.02" max="1" step="0.01" value="0.1" />
-              <input id="bridgeWaistNum" class="num" type="number" min="0.02" max="1" step="0.01" value="0.1" />
+              <input id="bridgeWaist" type="range" min="0.02" max="3" step="0.01" value="0.1" />
+              <input id="bridgeWaistNum" class="num" type="number" min="0.02" max="3" step="0.01" value="0.1" />
             </div>
           </div>
 
@@ -107,7 +124,7 @@
             <label>Max connect dist (cells)</label>
             <div class="control">
               <input id="maxConnectDist" type="range" min="0.6" max="100" step="0.01" value="1.2" />
-              <input id="maxConnectDistNum" class="num" type="number" min="0.6" max="6" step="0.01" value="1.2" />
+              <input id="maxConnectDistNum" class="num" type="number" min="0.6" max="100" step="0.01" value="1.2" />
             </div>
           </div>
 
@@ -224,8 +241,10 @@
     </main>
 
     <script src="./presets.js"></script>
+    <script src="./user-presets.js"></script>
     <script src="./sketch.js"></script>
     <script src="./gallery.js"></script>
+    <script src="./ai.js"></script>
   </body>
 </html>
 
