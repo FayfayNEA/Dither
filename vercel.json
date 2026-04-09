@@ -1,4 +1,6 @@
 {
+  "buildCommand": null,
+  "outputDirectory": ".",
   "functions": {
     "api/suggest.js": {
       "maxDuration": 30
