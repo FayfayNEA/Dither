@@ -161,6 +161,14 @@ export default async function handler(req, res) {
     res.json(suggestion);
   } catch (err) {
     console.error("/api/suggest error:", err.message);
+    const status = err.status || err.statusCode;
+    if (status === 429) {
+      const isRateLimit = /rate.limit|per.minute|rpm/i.test(err.message);
+      const msg = isRateLimit
+        ? "oof, try again in a bit — too many people trying to make cool images right now"
+        : "quota hit! come back tomorrow";
+      return res.status(429).json({ error: msg });
+    }
     res.status(500).json({ error: err.message });
   }
 }
