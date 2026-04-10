@@ -82,8 +82,8 @@ function draw() {
     if (cfg.gridCount < 4) return;
     drawHalftoneGrid(cfg, false);
   } else if (cfg.renderStyle === "stipple") {
-    if (cfg.gridCount < 4) return;
-    drawHalftoneGrid(cfg, true);
+    if (cfg.gridCount < 2) return;
+    drawOrganicGrid(cfg, cfg.maxLinksPerDot > 0, true);
   } else if (cfg.renderStyle === "halftone_edges") {
     if (cfg.gridCount < 4) return;
     drawHalftoneWithEdges(cfg);
@@ -125,7 +125,7 @@ function computeLayoutFromImage() {
   resizeCanvas(contentW + 2 * margin, contentH + 2 * margin);
 }
 
-function drawOrganicGrid(cfg, drawBridges) {
+function drawOrganicGrid(cfg, drawBridges, stippleMode = false) {
   grayImg = srcImg.get();
   grayImg.resize(contentW, contentH);
   grayImg.filter(GRAY);
@@ -135,14 +135,15 @@ function drawOrganicGrid(cfg, drawBridges) {
   dots = new Array(cfg.gridCount);
   for (let gx = 0; gx < cfg.gridCount; gx++) dots[gx] = new Array(cfg.gridCount);
 
-  const jitter = cfg.dotJitter || 0;
+  const jitter = Math.max(cfg.dotJitter || 0, stippleMode ? (cfg.stippleJitter || 0) : 0);
   for (let gy = 0; gy < cfg.gridCount; gy++) {
     for (let gx = 0; gx < cfg.gridCount; gx++) {
       const jx = jitter > 0 ? (hash01(gx * 7 + 13, gy * 3 + 5) - 0.5) * spacing * jitter : 0;
       const jy = jitter > 0 ? (hash01(gx * 5 + 2, gy * 11 + 7) - 0.5) * spacing * jitter : 0;
       const px = Math.floor(gx * spacing + spacing * 0.5 + jx);
       const py = Math.floor(gy * spacing + spacing * 0.5 + jy);
-      const b = sampleBrightness01(px, py, cfg);
+      let b = sampleBrightness01(px, py, cfg);
+      if (stippleMode && cfg.halftoneGamma != null) b = applyLumaGamma01(b, cfg.halftoneGamma);
       const grad = localGradient01(px, py);
       const r = lerp(cfg.maxRadius, cfg.minRadius, b);
       dots[gx][gy] = { x: px + margin, y: py + margin, r, b, grad };
