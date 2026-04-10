@@ -130,6 +130,78 @@ threshold [0.05–0.95] — 1-bit cutoff (threshold only)
   0.1–0.3 = sparse ink, lots of white
   0.6–0.9 = near-solid black, dense
 
+━━━ TEXTURE LIBRARY — use these as building blocks ━━━
+
+VINES / TENDRILS / ROOTS
+  renderStyle: organic
+  gridCount: 90–120 (dense dot field = many connection points)
+  minRadius: 0.5–1.5, maxRadius: 3–7 (small dots — bridges are the star, not the blobs)
+  maxLinksPerDot: 6–8 (every dot sprouting multiple connections)
+  maxConnectDist: 0.9–1.3 (only reach immediate neighbors — tight lattice, not sprawl)
+  bridgeScale: 0.4–1.5 (thin like actual vines)
+  bridgeWaist: 0.02–0.08 (filament-thin in the middle)
+  edgeTaper: 0.7–1.0 (taper to sharp points at the ends)
+  contrast: 1.3–1.6, maxBright: 0.45–0.55
+
+ROCK / STONE / ROUGH SURFACE
+  renderStyle: organic or stipple
+  For organic: low gridCount (20–40), high maxRadius (18–28) = chunky dark masses
+  bridgeScale: 2–5, bridgeWaist: 0.02–0.05 (sharp, thin, brittle connections)
+  edgeTaper: 0.9–1.0 (bridges end in sharp jagged points)
+  maxConnectDist: 0.8–1.1 (short reach, abrupt connections)
+  contrast: 1.7–2.0 (harsh, no subtlety)
+  maxLinksPerDot: 2–4 (sparse, fractured, not webbed)
+  For stipple: high stippleJitter (0.9–1.1), low halftoneGamma (1.1–1.2)
+
+WATER / LIQUID / FLOW
+  renderStyle: organic
+  gridCount: 50–75
+  bridgeWaist: 0.8–1.8 (bridges that bulge and flow into each other, not pinched)
+  edgeTaper: 0–0.15 (blunt ends — bridges merge smoothly, no sharp tips)
+  maxConnectDist: 3–8 (bridges reach further, creating flowing arcs)
+  maxLinksPerDot: 3–5
+  bridgeScale: 3–7
+  contrast: 0.75–1.0 (water is reflective, lighter, less harsh)
+  maxBright: 0.3–0.4 (sparse, airy — light scatters on water)
+  toneDiffLimit: 0.3–0.5 (bridges connect similar tones = smooth tonal flow)
+
+FUR / HAIR / GRASS
+  renderStyle: organic
+  gridCount: 80–110
+  minRadius: 0.5, maxRadius: 4–8
+  bridgeScale: 0.3–0.8 (hair-thin)
+  bridgeWaist: 0.01–0.04 (nearly invisible center — just a line)
+  edgeTaper: 0.85–1.0 (tapers to nothing at ends like a hair strand)
+  maxConnectDist: 1.5–3 (slightly longer reach for flowing strands)
+  maxLinksPerDot: 3–5
+  gradientThreshold: 0.02–0.08 (allow bridges at edges for hairy silhouette)
+
+SMOKE / FOG / MIST
+  renderStyle: organic_dots or fs
+  For organic_dots: very low gridCount (20–35), minRadius 0.5, maxRadius 14–20
+  maxBright: 0.25–0.35 (sparse, barely-there dots)
+  contrast: 0.6–0.8 (faded, diffuse)
+  For fs: contrast 0.65, halftoneGamma 0.55
+
+CIRCUIT / TECH / WIRES
+  renderStyle: halftone_edges or organic
+  For organic: high gridCount (70–100), maxConnectDist 1.0–1.4
+  bridgeScale: 1–3, bridgeWaist: 0.5–0.8 (uniform rods like wires)
+  edgeTaper: 0 (blunt ends, right angles)
+  maxLinksPerDot: 2–3 (sparse, deliberate connections)
+  contrast: 1.4–1.7
+  For halftone_edges: edgeMag 0.25–0.35, high contrast
+
+SKIN / FLESH / ORGANIC TISSUE
+  renderStyle: organic
+  gridCount: 55–80
+  bridgeWaist: 0.4–0.9 (soft connections, not sharp)
+  bridgeScale: 2–5
+  edgeTaper: 0.3–0.5 (slight taper but not sharp)
+  maxConnectDist: 1.2–2.0
+  contrast: 1.0–1.3
+  maxBright: 0.48–0.58
+
 ━━━ OUTPUT ━━━
 
 Respond ONLY with a single valid JSON object — no markdown, no code fences, nothing else:
