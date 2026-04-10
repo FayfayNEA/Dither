@@ -130,77 +130,93 @@ threshold [0.05–0.95] — 1-bit cutoff (threshold only)
   0.1–0.3 = sparse ink, lots of white
   0.6–0.9 = near-solid black, dense
 
+━━━ BRIDGE PHYSICS — read this before using organic ━━━
+
+Bridges only draw between two dots when their screen distance d satisfies:
+  (ra + rb) * 0.8 ≤ d ≤ (ra + rb) * 1.5
+AND d ≤ spacing * maxConnectDist * 0.9
+
+This means:
+- maxConnectDist MUST be > 1.15 or even immediate neighbors are skipped. Safe minimum: 1.2.
+- Dot radii must be large enough relative to grid spacing. At gridCount 80, spacing ≈ 7px — you need minRadius ≥ 2.5 or dots are too small to bridge. At gridCount 50, spacing ≈ 12px — need minRadius ≥ 4.
+- Rule of thumb: minRadius should be roughly spacing * 0.35 or higher. Tiny radii + high gridCount = invisible bridges regardless of bridgeScale.
+- maxBright filters out bright dots from bridging — keep it 0.42–0.58 for good bridge coverage.
+- If bridges should dominate the image, make maxLinksPerDot 5–8 and keep toneDiffLimit generous (0.3+).
+
 ━━━ TEXTURE LIBRARY — use these as building blocks ━━━
 
 VINES / TENDRILS / ROOTS
-  renderStyle: organic
-  gridCount: 90–120 (dense dot field = many connection points)
-  minRadius: 0.5–1.5, maxRadius: 3–7 (small dots — bridges are the star, not the blobs)
+  renderStyle: organic (NOT organic_dots — that style never draws bridges)
+  gridCount: 60–75 (dense enough for a lattice, but spacing large enough for radii to bridge)
+  minRadius: 3–5, maxRadius: 6–10 (dots sized to bridge at this gridCount)
   maxLinksPerDot: 6–8 (every dot sprouting multiple connections)
-  maxConnectDist: 0.9–1.3 (only reach immediate neighbors — tight lattice, not sprawl)
-  bridgeScale: 0.4–1.5 (thin like actual vines)
+  maxConnectDist: 1.2–1.4 (only immediate neighbors — tight lattice, not sprawl)
+  bridgeScale: 0.5–1.5 (thin like actual vines)
   bridgeWaist: 0.02–0.08 (filament-thin in the middle)
-  edgeTaper: 0.7–1.0 (taper to sharp points at the ends)
-  contrast: 1.3–1.6, maxBright: 0.45–0.55
+  edgeTaper: 0.75–1.0 (taper to sharp points)
+  contrast: 1.3–1.6, maxBright: 0.48–0.56, toneDiffLimit: 0.3
 
 ROCK / STONE / ROUGH SURFACE
-  renderStyle: organic or stipple
-  For organic: low gridCount (20–40), high maxRadius (18–28) = chunky dark masses
-  bridgeScale: 2–5, bridgeWaist: 0.02–0.05 (sharp, thin, brittle connections)
-  edgeTaper: 0.9–1.0 (bridges end in sharp jagged points)
-  maxConnectDist: 0.8–1.1 (short reach, abrupt connections)
+  renderStyle: organic
+  gridCount: 22–38 (chunky, coarse — few large marks)
+  minRadius: 5–9, maxRadius: 18–26 (big blobs = chunky stone masses)
+  bridgeScale: 2–5, bridgeWaist: 0.02–0.06 (sharp, brittle connections)
+  edgeTaper: 0.88–1.0 (bridges end in jagged points)
+  maxConnectDist: 1.2–1.5
   contrast: 1.7–2.0 (harsh, no subtlety)
-  maxLinksPerDot: 2–4 (sparse, fractured, not webbed)
-  For stipple: high stippleJitter (0.9–1.1), low halftoneGamma (1.1–1.2)
+  maxLinksPerDot: 2–4 (sparse, fractured)
+  toneDiffLimit: 0.08–0.15 (only connect same-darkness clusters = cracked stone)
+  maxBright: 0.45–0.55
 
 WATER / LIQUID / FLOW
   renderStyle: organic
-  gridCount: 50–75
-  bridgeWaist: 0.8–1.8 (bridges that bulge and flow into each other, not pinched)
-  edgeTaper: 0–0.15 (blunt ends — bridges merge smoothly, no sharp tips)
-  maxConnectDist: 3–8 (bridges reach further, creating flowing arcs)
+  gridCount: 45–65
+  minRadius: 4–7, maxRadius: 10–18
+  bridgeWaist: 1.0–2.0 (bridges that bulge and flow into each other)
+  edgeTaper: 0–0.12 (blunt ends — bridges merge smoothly)
+  maxConnectDist: 1.8–4.0 (longer reach = flowing arcs)
   maxLinksPerDot: 3–5
-  bridgeScale: 3–7
-  contrast: 0.75–1.0 (water is reflective, lighter, less harsh)
-  maxBright: 0.3–0.4 (sparse, airy — light scatters on water)
-  toneDiffLimit: 0.3–0.5 (bridges connect similar tones = smooth tonal flow)
+  bridgeScale: 3–8
+  contrast: 0.7–0.95 (lighter, reflective)
+  maxBright: 0.32–0.42 (sparse, airy — light scatters on water)
+  toneDiffLimit: 0.35–0.5 (similar tones connect = smooth tonal flow)
 
 FUR / HAIR / GRASS
   renderStyle: organic
-  gridCount: 80–110
-  minRadius: 0.5, maxRadius: 4–8
-  bridgeScale: 0.3–0.8 (hair-thin)
-  bridgeWaist: 0.01–0.04 (nearly invisible center — just a line)
-  edgeTaper: 0.85–1.0 (tapers to nothing at ends like a hair strand)
-  maxConnectDist: 1.5–3 (slightly longer reach for flowing strands)
+  gridCount: 65–85
+  minRadius: 2.5–4, maxRadius: 6–10
+  bridgeScale: 0.3–0.9 (hair-thin)
+  bridgeWaist: 0.01–0.05 (nearly invisible center)
+  edgeTaper: 0.85–1.0 (tapers to nothing at tips)
+  maxConnectDist: 1.3–2.0
   maxLinksPerDot: 3–5
-  gradientThreshold: 0.02–0.08 (allow bridges at edges for hairy silhouette)
+  gradientThreshold: 0.02–0.08
 
 SMOKE / FOG / MIST
   renderStyle: organic_dots or fs
-  For organic_dots: very low gridCount (20–35), minRadius 0.5, maxRadius 14–20
-  maxBright: 0.25–0.35 (sparse, barely-there dots)
-  contrast: 0.6–0.8 (faded, diffuse)
+  For organic_dots: gridCount 20–35, minRadius 0.5, maxRadius 14–20
+  maxBright: 0.25–0.35, contrast: 0.6–0.8
   For fs: contrast 0.65, halftoneGamma 0.55
 
 CIRCUIT / TECH / WIRES
-  renderStyle: halftone_edges or organic
-  For organic: high gridCount (70–100), maxConnectDist 1.0–1.4
-  bridgeScale: 1–3, bridgeWaist: 0.5–0.8 (uniform rods like wires)
-  edgeTaper: 0 (blunt ends, right angles)
-  maxLinksPerDot: 2–3 (sparse, deliberate connections)
-  contrast: 1.4–1.7
-  For halftone_edges: edgeMag 0.25–0.35, high contrast
+  renderStyle: organic
+  gridCount: 55–75
+  minRadius: 3–5, maxRadius: 7–12
+  bridgeScale: 1.5–3.5, bridgeWaist: 0.5–0.9 (uniform rods like wire)
+  edgeTaper: 0–0.05 (blunt right-angle ends)
+  maxConnectDist: 1.2–1.5
+  maxLinksPerDot: 2–3 (sparse, deliberate)
+  contrast: 1.4–1.7, maxBright: 0.5
 
 SKIN / FLESH / ORGANIC TISSUE
   renderStyle: organic
-  gridCount: 55–80
-  bridgeWaist: 0.4–0.9 (soft connections, not sharp)
+  gridCount: 50–70
+  minRadius: 4–6, maxRadius: 10–16
+  bridgeWaist: 0.5–1.0 (soft connections)
   bridgeScale: 2–5
-  edgeTaper: 0.3–0.5 (slight taper but not sharp)
-  maxConnectDist: 1.2–2.0
-  contrast: 1.0–1.3
-  maxBright: 0.48–0.58
+  edgeTaper: 0.25–0.5
+  maxConnectDist: 1.3–2.0
+  contrast: 1.0–1.3, maxBright: 0.48–0.58
 
 ━━━ OUTPUT ━━━
 
