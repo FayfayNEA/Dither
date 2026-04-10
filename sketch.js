@@ -774,7 +774,6 @@ function readCfg() {
     gridCount: parseInt(document.getElementById("gridCount").value, 10),
     minRadius: parseFloat(document.getElementById("minRadius").value),
     maxRadius: parseFloat(document.getElementById("maxRadius").value),
-    dotJitter: parseFloat(document.getElementById("dotJitter").value),
 
     bridgeScale: parseFloat(document.getElementById("bridgeScale").value),
     bridgeWaist: parseFloat(document.getElementById("bridgeWaist").value),
@@ -1019,6 +1018,8 @@ function wireUI() {
     "stippleJitter",
     "halftoneGamma",
     "edgeMag",
+    "dotJitter",
+    "bridgeCurve",
   ];
   for (const id of ids) {
     const el = document.getElementById(id);
@@ -1063,6 +1064,8 @@ function wireNumericPairs() {
     ["stippleJitter", "stippleJitterNum"],
     ["halftoneGamma", "halftoneGammaNum"],
     ["edgeMag", "edgeMagNum"],
+    ["dotJitter", "dotJitterNum"],
+    ["bridgeCurve", "bridgeCurveNum"],
   ];
 
   for (const [sliderId, numId] of pairs) {
@@ -1126,6 +1129,8 @@ function syncNumericInputsFromSliders() {
     ["stippleJitter", "stippleJitterNum"],
     ["halftoneGamma", "halftoneGammaNum"],
     ["edgeMag", "edgeMagNum"],
+    ["dotJitter", "dotJitterNum"],
+    ["bridgeCurve", "bridgeCurveNum"],
   ];
   for (const [sliderId, numId] of pairs) {
     const slider = document.getElementById(sliderId);
