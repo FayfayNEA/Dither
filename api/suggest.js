@@ -1,6 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 
-const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const SYSTEM_PROMPT = `You are a visual artist and dithering composer for "fither". Your job is to translate a feeling, scene, or concept into a precise dither configuration — treating the parameters as brushstrokes, not settings.
 
@@ -127,34 +127,25 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { prompt, imageBase64, imageMediaType } = req.body;
+    const { prompt, imageBase64 } = req.body;
 
     if (!prompt && !imageBase64) {
       return res.status(400).json({ error: "prompt or image is required" });
     }
 
-    const model = genai.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      systemInstruction: SYSTEM_PROMPT,
+    const userText = prompt?.slice(0, 500) || "What dithering preset would make this image look best?";
+
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userText },
+      ],
+      temperature: 1.0,
+      max_tokens: 1024,
     });
 
-    const parts = [];
-
-    if (imageBase64) {
-      parts.push({
-        inlineData: {
-          mimeType: imageMediaType || "image/jpeg",
-          data: imageBase64,
-        },
-      });
-    }
-
-    parts.push({
-      text: prompt?.slice(0, 500) || "What dithering preset would make this image look best?",
-    });
-
-    const result = await model.generateContent(parts);
-    const responseText = result.response.text();
+    const responseText = completion.choices[0].message.content;
 
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("AI returned an unexpected response format");
