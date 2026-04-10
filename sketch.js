@@ -73,7 +73,7 @@ function draw() {
   const cfg = readCfg();
   if (cfg.renderStyle === "organic" || cfg.renderStyle === "organic_dots") {
     if (cfg.gridCount < 2) return;
-    drawOrganicGrid(cfg, cfg.renderStyle === "organic");
+    drawOrganicGrid(cfg, cfg.renderStyle === "organic" || cfg.maxLinksPerDot > 0);
   } else if (cfg.renderStyle === "threshold") {
     drawThresholdDither(cfg);
   } else if (cfg.renderStyle === "ordered" || cfg.renderStyle === "ordered8") {

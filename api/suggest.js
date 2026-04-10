@@ -36,7 +36,7 @@ Extract the core sensory qualities of the prompt. Examples:
 This is the most important choice. Match the texture of the style to the texture of the vibe.
 
 organic        — living, neural, ink-dripped, mycelial, suffocating growth, wet connections
-organic_dots   — rain on glass, freckled skin, scattered spores, breathing space
+organic_dots   — rain on glass, freckled skin, scattered spores, breathing space. Bridges appear when maxLinksPerDot > 0.
 halftone       — newsprint, offset print, pop art, commercial, mass-produced, Roy Lichtenstein
 stipple        — copper engraving, scientific illustration, old maps, patient hand, etching
 halftone_edges — blueprint, schematic, surveillance, technical drawing, forensic
@@ -158,7 +158,7 @@ This means:
 ━━━ TEXTURE LIBRARY — use these as building blocks ━━━
 
 VINES / TENDRILS / ROOTS
-  renderStyle: organic (NOT organic_dots — that style never draws bridges)
+  renderStyle: organic or organic_dots (both support bridges when maxLinksPerDot > 0)
   gridCount: 60–75 (dense enough for a lattice, but spacing large enough for radii to bridge)
   minRadius: 3–5, maxRadius: 6–10 (dots sized to bridge at this gridCount)
   maxLinksPerDot: 6–8 (every dot sprouting multiple connections)
