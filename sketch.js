@@ -271,7 +271,7 @@ function drawHalftoneGrid(cfg, stipple) {
   const ny = Math.max(4, Math.round((contentH / contentW) * nx));
   const cellW = contentW / nx;
   const cellH = contentH / ny;
-  const jitter = cfg.stippleJitter ?? 0.42;
+  const jitter = Math.max(cfg.stippleJitter ?? 0.42, cfg.dotJitter ?? 0);
   const gamma = cfg.halftoneGamma ?? 0.88;
   const gain = clamp((cfg.maxRadius / 30) * 0.95, 0.18, 0.58);
   const minR = (cfg.minRadius / 12) * 0.08 * Math.min(cellW, cellH);
