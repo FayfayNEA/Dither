@@ -1205,6 +1205,16 @@ function wireNumericPairs() {
       num.value = String(v);
       sizeNumInputWidths();
 
+      // Mirror the same flip-to-custom logic as slider input events.
+      if (!applyingPreset) {
+        const sel = document.getElementById("presetSelect");
+        const currentKey = sel?.value || "custom";
+        if (currentKey !== "custom" && DITHER_PRESETS[currentKey]) {
+          lastNonCustomRenderStyle = DITHER_PRESETS[currentKey].renderStyle || lastNonCustomRenderStyle;
+          if (sel) sel.value = "custom";
+        }
+      }
+
       if (srcImg) {
         hasRendered = false;
         setStatus("Rendering...");
