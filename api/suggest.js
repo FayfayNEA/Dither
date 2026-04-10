@@ -127,7 +127,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { prompt, imageBase64 } = req.body;
+    const { prompt, imageBase64, imageMediaType } = req.body;
 
     if (!prompt && !imageBase64) {
       return res.status(400).json({ error: "prompt or image is required" });
@@ -135,11 +135,18 @@ export default async function handler(req, res) {
 
     const userText = prompt?.slice(0, 500) || "What dithering preset would make this image look best?";
 
+    const userContent = imageBase64
+      ? [
+          { type: "image_url", image_url: { url: `data:${imageMediaType || "image/jpeg"};base64,${imageBase64}` } },
+          { type: "text", text: userText },
+        ]
+      : userText;
+
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userText },
+        { role: "user", content: userContent },
       ],
       temperature: 1.0,
       max_tokens: 1024,
