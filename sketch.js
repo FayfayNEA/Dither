@@ -98,6 +98,10 @@ function draw() {
     drawErrorDiffusion(cfg);
   } else if (cfg.renderStyle === "diamond_overlay") {
     drawDiamondOverlayDither(cfg);
+  } else if (cfg.renderStyle === "square_overlay") {
+    drawSquareOverlayDither(cfg);
+  } else if (cfg.renderStyle === "concentric") {
+    drawConcentricDither(cfg);
   }
 
   hasRendered = true;
@@ -388,6 +392,111 @@ function drawDiamondOverlayDither(cfg) {
   }
 
   rectMode(CORNER);
+}
+
+/** Axis-aligned squares — same logic as diamond_overlay but no rotation. */
+function drawSquareOverlayDither(cfg) {
+  grayImg = srcImg.get();
+  grayImg.resize(contentW, contentH);
+  grayImg.filter(GRAY);
+  grayImg.loadPixels();
+
+  const seed = Math.floor(
+    cfg.gridCount * 7919 + cfg.contrast * 1000 + cfg.minRadius * 300 + cfg.maxRadius * 17 + cfg.stippleJitter * 500
+  );
+  randomSeed(seed);
+
+  const densityMul = clamp(cfg.gridCount / 72, 0.4, 2.4);
+  const linkBoost = 1 + cfg.maxLinksPerDot * 0.09;
+  const n = clamp(floor(1400 * densityMul * linkBoost), 900, 32000);
+  const minPx = max(1.5, cfg.minRadius * 2.0);
+  const maxPx = max(minPx + 0.5, cfg.maxRadius * 4.2);
+
+  background(255);
+  noStroke();
+  rectMode(CENTER);
+
+  for (let i = 0; i < n; i++) {
+    let cx = random(0, contentW);
+    let cy = random(0, contentH);
+    const j = cfg.stippleJitter * 10;
+    cx += (noise(cx * 0.04 + j, cy * 0.04) - 0.5) * cfg.stippleJitter * 14;
+    cy += (noise(cx * 0.04 + 20, cy * 0.04 + 11) - 0.5) * cfg.stippleJitter * 14;
+
+    const ix = clampInt(floor(cx), 0, contentW - 1);
+    const iy = clampInt(floor(cy), 0, contentH - 1);
+    let b = brightness01At(ix, iy);
+    b = applyContrast01(b, cfg.contrast);
+    b = applyLumaGamma01(b, cfg.halftoneGamma);
+    if (cfg.quantizeLevels > 1) b = quantize01(b, cfg.quantizeLevels);
+    if (b > cfg.maxBright && random() > 0.12) continue;
+
+    const grad = localGradient01(ix, iy);
+    if (grad < cfg.gradientThreshold * 0.35 && random() > 0.45) continue;
+
+    const sz = random(minPx, maxPx);
+    const tone = 1 - b;
+    const baseA = random(0.05, 0.78) * (0.35 + tone * 0.95);
+    const bridgeW = lerp(0.85, 1.15, cfg.bridgeWaist);
+    let a = baseA * clamp(cfg.contrast, 0.55, 1.85) * bridgeW * clamp(cfg.bridgeScale / 3.77, 0.55, 1.45);
+    a *= 1 - clamp(cfg.toneDiffLimit * 0.35, 0, 0.25);
+    a *= 1 - clamp(cfg.edgeTaper * grad * 1.2, 0, 0.35);
+    a = clamp(a, 0.03, 0.98);
+
+    fill(0, floor(a * 255));
+    square(margin + cx, margin + cy, sz); // no rotation — axis-aligned
+  }
+
+  rectMode(CORNER);
+}
+
+/** Concentric rings radiating from each halftone cell center — ring spacing scales with tone. */
+function drawConcentricDither(cfg) {
+  grayImg = srcImg.get();
+  grayImg.resize(contentW, contentH);
+  grayImg.filter(GRAY);
+  grayImg.loadPixels();
+
+  background(255);
+  noFill();
+
+  const nx = Math.max(4, cfg.gridCount);
+  const ny = Math.max(4, Math.round((contentH / contentW) * nx));
+  const cellW = contentW / nx;
+  const cellH = contentH / ny;
+  const gamma = cfg.halftoneGamma ?? 0.88;
+  const gain = clamp((cfg.maxRadius / 30) * 0.95, 0.18, 0.58);
+  const maxR = gain * Math.min(cellW, cellH);
+  const strokeW = clamp(cfg.bridgeScale * 0.4, 0.4, 6);
+  const ringGap = clamp(cfg.bridgeWaist * 3 + 1.5, 1.5, 10);
+  const jitter = cfg.stippleJitter ?? 0;
+
+  for (let j = 0; j < ny; j++) {
+    for (let i = 0; i < nx; i++) {
+      let cx = (i + 0.5) * cellW;
+      let cy = (j + 0.5) * cellH;
+      if (jitter > 0) {
+        cx += (noise(i * 1.1, j * 1.1) - 0.5) * cellW * jitter * 1.5;
+        cy += (noise(i * 1.1 + 40, j * 1.1 + 20) - 0.5) * cellH * jitter * 1.5;
+      }
+      cx = clamp(cx, 0.5, contentW - 0.5);
+      cy = clamp(cy, 0.5, contentH - 0.5);
+      const ix = clampInt(Math.floor(cx), 0, contentW - 1);
+      const iy = clampInt(Math.floor(cy), 0, contentH - 1);
+      const b = sampleBrightness01(ix, iy, cfg);
+      const darkness = 1 - b;
+      const outerR = maxR * Math.pow(darkness, gamma);
+      if (outerR < 1) continue;
+      stroke(0);
+      strokeWeight(strokeW);
+      let r = ringGap;
+      while (r <= outerR) {
+        ellipse(margin + cx, margin + cy, r * 2, r * 2);
+        r += ringGap + strokeW;
+      }
+    }
+  }
+  noStroke();
 }
 
 function drawHalftoneWithEdges(cfg) {

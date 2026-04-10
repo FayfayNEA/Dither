@@ -16,6 +16,8 @@
     stipple:         "organic_dither_field_final",
     halftone_edges:  "organic_grid_gradient",
     diamond_overlay: "diamond_overlay_noise",
+    square_overlay:  "square_overlay_default",
+    concentric:      "concentric_default",
     ordered8:        "ordered_bayer8",
     threshold:       "threshold_dither",
     fs:              "floyd_steinberg",

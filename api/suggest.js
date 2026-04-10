@@ -41,6 +41,8 @@ halftone       — newsprint, offset print, pop art, commercial, mass-produced, 
 stipple        — copper engraving, scientific illustration, old maps, patient hand, etching
 halftone_edges — blueprint, schematic, surveillance, technical drawing, forensic
 diamond_overlay — textile, weave, diffraction, crystalline, baroque, iridescent
+square_overlay  — axis-aligned squares. Grid paper, brutalist, Mondrian, pixel art, tile work, graph paper
+concentric      — concentric rings from each cell. Topographic map, ripples, sonar, vinyl record, sound waves
 ordered8       — Game Boy, LCD panel, CRT, pixel art, 1990 computer graphics, lo-fi digital
 threshold      — woodblock, linocut, rubber stamp, xerox, stencil, photostat, silkscreen
 fs             — photographic, inkjet, smooth gradients, highest fidelity
