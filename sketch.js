@@ -131,10 +131,13 @@ function drawOrganicGrid(cfg, drawBridges) {
   dots = new Array(cfg.gridCount);
   for (let gx = 0; gx < cfg.gridCount; gx++) dots[gx] = new Array(cfg.gridCount);
 
+  const jitter = cfg.dotJitter || 0;
   for (let gy = 0; gy < cfg.gridCount; gy++) {
     for (let gx = 0; gx < cfg.gridCount; gx++) {
-      const px = Math.floor(gx * spacing + spacing * 0.5);
-      const py = Math.floor(gy * spacing + spacing * 0.5);
+      const jx = jitter > 0 ? (hash01(gx * 7 + 13, gy * 3 + 5) - 0.5) * spacing * jitter : 0;
+      const jy = jitter > 0 ? (hash01(gx * 5 + 2, gy * 11 + 7) - 0.5) * spacing * jitter : 0;
+      const px = Math.floor(gx * spacing + spacing * 0.5 + jx);
+      const py = Math.floor(gy * spacing + spacing * 0.5 + jy);
       const b = sampleBrightness01(px, py, cfg);
       const grad = localGradient01(px, py);
       const r = lerp(cfg.maxRadius, cfg.minRadius, b);
@@ -687,49 +690,52 @@ function drawBridge(a, b, cfg) {
   const edgeLimitB = TWO_PI * b.r * 0.15;
   const totalDist = dist(a.x, a.y, b.x, b.y);
 
+  // Curved bridge: quadratic bezier control point offset perpendicular to bridge axis
+  const curveMag = cfg.bridgeCurve || 0;
+  const perpSign = hash01(Math.round(a.x * 0.1 + b.y * 0.07), Math.round(a.y * 0.09 + b.x * 0.11)) > 0.5 ? 1 : -1;
+  const perpDist = curveMag * totalDist * 0.55 * perpSign;
+  const midX = (a.x + b.x) * 0.5 + nx * perpDist;
+  const midY = (a.y + b.y) * 0.5 + ny * perpDist;
+
+  function bezierPt(t) {
+    const mt = 1 - t;
+    const bx = mt * mt * a.x + 2 * mt * t * midX + t * t * b.x;
+    const by = mt * mt * a.y + 2 * mt * t * midY + t * t * b.y;
+    // Tangent for local normal
+    const tx = 2 * mt * (midX - a.x) + 2 * t * (b.x - midX);
+    const ty = 2 * mt * (midY - a.y) + 2 * t * (b.y - midY);
+    const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
+    return { x: bx, y: by, px: -ty / tLen, py: tx / tLen };
+  }
+
   beginShape();
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
-    const cx = lerp(a.x, b.x, t);
-    const cy = lerp(a.y, b.y, t);
+    const pt = bezierPt(t);
 
     const taper = Math.pow(Math.sin(Math.PI * t), 1.2);
     let w = lerp(baseW, waistW, taper);
 
     let edgeBlend = 1.0;
-    if (t * totalDist < edgeLimitA) {
-      const fade = (t * totalDist) / edgeLimitA;
-      edgeBlend = lerp(0.6, 1.0, fade);
-    } else if ((1 - t) * totalDist < edgeLimitB) {
-      const fade = ((1 - t) * totalDist) / edgeLimitB;
-      edgeBlend = lerp(0.6, 1.0, fade);
-    }
+    if (t * totalDist < edgeLimitA) edgeBlend = lerp(0.6, 1.0, (t * totalDist) / edgeLimitA);
+    else if ((1 - t) * totalDist < edgeLimitB) edgeBlend = lerp(0.6, 1.0, ((1 - t) * totalDist) / edgeLimitB);
 
-    const endTaper = lerp(1.0, Math.sin(Math.PI * t), taperStrength);
-    w *= edgeBlend * endTaper;
-    vertex(cx - nx * w, cy - ny * w);
+    w *= edgeBlend * lerp(1.0, Math.sin(Math.PI * t), taperStrength);
+    vertex(pt.x - pt.px * w, pt.y - pt.py * w);
   }
-
   for (let i = steps; i >= 0; i--) {
     const t = i / steps;
-    const cx = lerp(a.x, b.x, t);
-    const cy = lerp(a.y, b.y, t);
+    const pt = bezierPt(t);
 
     const taper = Math.pow(Math.sin(Math.PI * t), 1.2);
     let w = lerp(baseW, waistW, taper);
 
     let edgeBlend = 1.0;
-    if (t * totalDist < edgeLimitA) {
-      const fade = (t * totalDist) / edgeLimitA;
-      edgeBlend = lerp(0.6, 1.0, fade);
-    } else if ((1 - t) * totalDist < edgeLimitB) {
-      const fade = ((1 - t) * totalDist) / edgeLimitB;
-      edgeBlend = lerp(0.6, 1.0, fade);
-    }
+    if (t * totalDist < edgeLimitA) edgeBlend = lerp(0.6, 1.0, (t * totalDist) / edgeLimitA);
+    else if ((1 - t) * totalDist < edgeLimitB) edgeBlend = lerp(0.6, 1.0, ((1 - t) * totalDist) / edgeLimitB);
 
-    const endTaper = lerp(1.0, Math.sin(Math.PI * t), taperStrength);
-    w *= edgeBlend * endTaper;
-    vertex(cx + nx * w, cy + ny * w);
+    w *= edgeBlend * lerp(1.0, Math.sin(Math.PI * t), taperStrength);
+    vertex(pt.x + pt.px * w, pt.y + pt.py * w);
   }
   endShape(CLOSE);
 }
@@ -768,6 +774,7 @@ function readCfg() {
     gridCount: parseInt(document.getElementById("gridCount").value, 10),
     minRadius: parseFloat(document.getElementById("minRadius").value),
     maxRadius: parseFloat(document.getElementById("maxRadius").value),
+    dotJitter: parseFloat(document.getElementById("dotJitter").value),
 
     bridgeScale: parseFloat(document.getElementById("bridgeScale").value),
     bridgeWaist: parseFloat(document.getElementById("bridgeWaist").value),
@@ -782,6 +789,9 @@ function readCfg() {
     quantizeLevels: parseInt(document.getElementById("quantizeLevels").value, 10),
 
     threshold: parseFloat(document.getElementById("threshold").value),
+
+    dotJitter: parseFloat(document.getElementById("dotJitter").value),
+    bridgeCurve: parseFloat(document.getElementById("bridgeCurve").value),
 
     stippleJitter: parseFloat(document.getElementById("stippleJitter").value),
     edgeMag: parseFloat(document.getElementById("edgeMag").value),
@@ -814,6 +824,8 @@ function presetIsRemixedFromDOM(presetKey) {
     "stippleJitter",
     "halftoneGamma",
     "edgeMag",
+    "dotJitter",
+    "bridgeCurve",
   ];
 
   const eps = 1e-4;
@@ -875,6 +887,8 @@ function applyPresetToUI(key, silent) {
     setVal("stippleJitter", 0.42);
     setVal("halftoneGamma", 0.88);
     setVal("edgeMag", 0.14);
+    setVal("dotJitter", 0);
+    setVal("bridgeCurve", 0);
 
     if (def.threshold != null) setVal("threshold", def.threshold);
 
@@ -895,6 +909,8 @@ function applyPresetToUI(key, silent) {
     if (def.stippleJitter != null) setVal("stippleJitter", def.stippleJitter);
     if (def.halftoneGamma != null) setVal("halftoneGamma", def.halftoneGamma);
     if (def.edgeMag != null) setVal("edgeMag", def.edgeMag);
+    if (def.dotJitter != null) setVal("dotJitter", def.dotJitter);
+    if (def.bridgeCurve != null) setVal("bridgeCurve", def.bridgeCurve);
 
     document.getElementById("presetSelect").value = key;
     updateLastNonCustomRenderStyle();

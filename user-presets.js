@@ -87,6 +87,8 @@
         halftoneGamma:     cfg.halftoneGamma,
         edgeMag:           cfg.edgeMag,
         threshold:         cfg.threshold,
+        dotJitter:         cfg.dotJitter,
+        bridgeCurve:       cfg.bridgeCurve,
       };
 
       // Add to live DITHER_PRESETS with ★ prefix.

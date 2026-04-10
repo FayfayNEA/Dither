@@ -118,6 +118,16 @@ halftoneGamma [0.5–1.2] — tone curve (stipple, halftone, halftone_edges, dia
   0.5–0.65 = open shadows, airy, washed out
   0.9–1.2 = crushed blacks, deep, contrasty
 
+dotJitter [0–1.5] — scatter organic/organic_dots dots from their grid positions (organic, organic_dots)
+  0 = perfect grid, ordered, structured
+  0.5–0.8 = hand-placed, loose, natural variation
+  1.0–1.5 = chaotic scatter, frantic energy, dots all over the place
+
+bridgeCurve [0–1] — bow bridges along a bezier arc (organic only)
+  0 = straight bridges
+  0.3–0.6 = gently curved, vine-like, flowing
+  0.8–1.0 = wildly curved, tangled, organic chaos
+
 stippleJitter [0–1.2] — dot scatter (stipple, halftone, halftone_edges, diamond_overlay)
   0–0.2 = mechanical, grid-like, ordered
   0.7–1.2 = chaotic, hand-placed, anxious

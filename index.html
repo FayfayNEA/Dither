@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./style.css?v=4" />
+    <link rel="stylesheet" href="./style.css?v=5" />
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
   </head>
   <body>
@@ -102,6 +102,14 @@
             </div>
           </div>
 
+          <div class="row" id="row-dotJitter">
+            <label>Dot jitter</label>
+            <div class="control">
+              <input id="dotJitter" type="range" min="0" max="1.5" step="0.01" value="0" />
+              <input id="dotJitterNum" class="num" type="number" min="0" max="1.5" step="0.01" value="0" />
+            </div>
+          </div>
+
           <hr />
 
           <div class="row" id="row-bridgeScale">
@@ -149,6 +157,14 @@
             <div class="control">
               <input id="edgeTaper" type="range" min="0" max="1" step="0.01" value="0.3" />
               <input id="edgeTaperNum" class="num" type="number" min="0" max="1" step="0.01" value="0.3" />
+            </div>
+          </div>
+
+          <div class="row" id="row-bridgeCurve">
+            <label>Bridge curve</label>
+            <div class="control">
+              <input id="bridgeCurve" type="range" min="0" max="1" step="0.01" value="0" />
+              <input id="bridgeCurveNum" class="num" type="number" min="0" max="1" step="0.01" value="0" />
             </div>
           </div>
 
