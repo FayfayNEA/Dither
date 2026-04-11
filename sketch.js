@@ -1285,6 +1285,53 @@ function scheduleRender(immediate = false) {
   }, 120);
 }
 
+const BRIDGE_SLIDERS = [
+  "row-bridgeScale", "row-bridgeWaist", "row-maxConnectDist",
+  "row-toneDiffLimit", "row-gradientThreshold", "row-edgeTaper", "row-bridgeCurve"
+];
+
+const STYLE_SLIDERS = {
+  organic:         new Set(["row-gridCount","row-minRadius","row-maxRadius","row-dotJitter","row-maxLinksPerDot","row-contrast","row-maxBright","row-quantizeLevels",...BRIDGE_SLIDERS]),
+  organic_dots:    new Set(["row-gridCount","row-minRadius","row-maxRadius","row-dotJitter","row-maxLinksPerDot","row-contrast","row-maxBright","row-quantizeLevels",...BRIDGE_SLIDERS]),
+  stipple:         new Set(["row-gridCount","row-minRadius","row-maxRadius","row-dotJitter","row-maxLinksPerDot","row-stippleJitter","row-halftoneGamma","row-contrast","row-maxBright","row-quantizeLevels",...BRIDGE_SLIDERS]),
+  halftone:        new Set(["row-gridCount","row-minRadius","row-maxRadius","row-halftoneGamma","row-contrast","row-quantizeLevels"]),
+  halftone_edges:  new Set(["row-gridCount","row-minRadius","row-maxRadius","row-halftoneGamma","row-stippleJitter","row-edgeMag","row-contrast","row-quantizeLevels"]),
+  diamond_overlay: new Set(["row-gridCount","row-minRadius","row-maxRadius","row-dotJitter","row-stippleJitter","row-halftoneGamma","row-maxLinksPerDot","row-contrast","row-maxBright","row-quantizeLevels",...BRIDGE_SLIDERS]),
+  square_overlay:  new Set(["row-gridCount","row-minRadius","row-maxRadius","row-dotJitter","row-stippleJitter","row-halftoneGamma","row-maxLinksPerDot","row-contrast","row-maxBright","row-quantizeLevels",...BRIDGE_SLIDERS]),
+  concentric:      new Set(["row-gridCount","row-minRadius","row-maxRadius","row-dotJitter","row-stippleJitter","row-halftoneGamma","row-contrast","row-quantizeLevels","row-bridgeScale","row-bridgeWaist"]),
+  ordered8:        new Set(["row-contrast"]),
+  threshold:       new Set(["row-contrast"]),
+  fs:              new Set(["row-contrast","row-halftoneGamma","row-quantizeLevels"]),
+  atkinson:        new Set(["row-contrast","row-halftoneGamma","row-quantizeLevels"]),
+  jarvis:          new Set(["row-contrast","row-halftoneGamma","row-quantizeLevels"]),
+  stucki:          new Set(["row-contrast","row-halftoneGamma","row-quantizeLevels"]),
+  burkes:          new Set(["row-contrast","row-halftoneGamma","row-quantizeLevels"]),
+  sierra2:         new Set(["row-contrast","row-halftoneGamma","row-quantizeLevels"]),
+};
+
+const ALL_SLIDER_ROWS = [
+  "row-gridCount","row-minRadius","row-maxRadius","row-dotJitter",
+  "row-bridgeScale","row-bridgeWaist","row-maxConnectDist","row-toneDiffLimit",
+  "row-gradientThreshold","row-edgeTaper","row-bridgeCurve",
+  "row-maxBright","row-maxLinksPerDot","row-contrast","row-quantizeLevels",
+  "row-stippleJitter","row-halftoneGamma","row-edgeMag"
+];
+
+function syncSliderActiveState(rs) {
+  const isCustom = document.getElementById("presetSelect").value === "custom";
+  const active = STYLE_SLIDERS[rs] || new Set();
+  for (const id of ALL_SLIDER_ROWS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    // In custom mode all sliders are live; otherwise gray out inactive ones
+    if (isCustom || active.has(id)) {
+      el.classList.remove("row--inactive");
+    } else {
+      el.classList.add("row--inactive");
+    }
+  }
+}
+
 function syncUIOutputs() {
   syncNumericInputsFromSliders();
   const presetKey = document.getElementById("presetSelect").value;
@@ -1296,6 +1343,7 @@ function syncUIOutputs() {
   if (thrRow) {
     thrRow.style.display = rs === "threshold" ? "grid" : "none";
   }
+  syncSliderActiveState(rs);
 }
 
 function setStatus(msg) {

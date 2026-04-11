@@ -346,6 +346,12 @@ hr {
   margin: 12px 0;
 }
 
+.row--inactive {
+  opacity: 0.28;
+  pointer-events: none;
+  user-select: none;
+}
+
 .control {
   display: flex;
   flex-direction: column;
